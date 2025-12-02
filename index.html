@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食事会チーム抽選</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'メイリオ', Meiryo, sans-serif;
+            background: #f1f1f1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #c6171e;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: white;
+            background: #c6171e;
+            box-shadow: 0 4px 15px rgba(198, 23, 30, 0.4);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(198, 23, 30, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            border: 4px solid #c6171e;
+        }
+
+        .result-text {
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .result-name {
+            color: #c6171e;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 20px;
+            background: #ffe8e9;
+            border-radius: 15px;
+        }
+
+        .result-message {
+            color: #666;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #c6171e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            display: none;
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .admin-link a {
+            color: #c6171e;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 30px 20px;
+            }
+            .header .logo {
+                max-width: 150px;
+            }
+            .header h1 {
+                font-size: 1.6em;
+            }
+            .result-icon {
+                width: 80px;
+                height: 80px;
+            }
+            .result-name {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="logo.png" alt="ロゴ" class="logo">
+                <h1>幹部食事会チーム抽選</h1>
+                <p>以下に名前を入力して抽選をしてください</p>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div id="formSection">
+                <div class="form-group">
+                    <label for="staffName">お名前</label>
+                    <input type="text" id="staffName" placeholder="例: 山田 太郎" autocomplete="off">
+                </div>
+
+                <button class="btn" onclick="drawLottery()">抽選する</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #666;">抽選中...</p>
+            </div>
+
+            <div class="result" id="result">
+                <img id="executiveIcon" class="result-icon" alt="">
+                <div class="result-text">あなたのチームは</div>
+                <div class="result-name" id="executiveName"></div>
+                <div class="result-message">
+                    日程調整をお待ちください！
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const executiveIcons = {
+            '駒居 康樹': 'img/2.png',
+            '木村 美月': 'img/3.png',
+            '長谷川 太一': 'img/4.png',
+            '村松 諒': 'img/6.png',
+            '西川 慶一': 'img/1.png',
+            '森本 風花': 'img/7.png',
+            '安藤 凪': 'img/5.png',
+            '廣田 朱音': 'img/8.png'
+        };
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+
+        async function drawLottery() {
+            const nameInput = document.getElementById('staffName');
+            const name = nameInput.value.trim();
+
+            hideError();
+
+            if (!name) {
+                showError('お名前を入力してください。');
+                return;
+            }
+
+            // UI更新
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/lottery', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 抽選結果を表示
+                    setTimeout(() => {
+                        document.getElementById('loading').classList.remove('show');
+                        document.getElementById('executiveName').textContent = data.executive;
+                        document.getElementById('executiveIcon').src = executiveIcons[data.executive];
+                        document.getElementById('executiveIcon').alt = data.executive;
+                        document.getElementById('result').classList.add('show');
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || '抽選に失敗しました。');
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('formSection').style.display = 'block';
+                showError(error.message || 'エラーが発生しました。もう一度お試しください。');
+            }
+        }
+
+        // Enterキーで送信
+        document.getElementById('staffName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                drawLottery();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "lottery-system",
+  "version": "1.0.0",
+  "description": "食事会チーム抽選システム",
+  "type": "module",
+  "engines": {
+    "node": ">=18.x"
+  }
+}
+
