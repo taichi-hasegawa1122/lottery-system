@@ -272,7 +272,6 @@
             <div class="controls">
                 <button class="btn btn-primary" onclick="loadResults()">更新</button>
                 <button class="btn btn-secondary" onclick="downloadResults()">CSV</button>
-                <button class="btn btn-danger" onclick="resetData()">データリセット</button>
             </div>
 
             <div id="loading" class="loading">
@@ -426,35 +425,6 @@
                 }
             } catch (error) {
                 alert('削除に失敗しました: ' + error.message);
-            }
-        }
-
-        async function resetData() {
-            if (!confirm('本当に全データをリセットしますか？\nこの操作は取り消せません。')) {
-                return;
-            }
-
-            if (!confirm('最終確認: 全てのチーム振り分けデータが削除されます。よろしいですか？')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/reset', { 
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('データをリセットしました。');
-                    loadResults();
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                alert('リセットに失敗しました: ' + error.message);
             }
         }
 

@@ -106,6 +106,20 @@
             cursor: not-allowed;
         }
 
+        .btn-secondary {
+            background: #666;
+            box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
+            font-size: 1em;
+            padding: 12px 30px;
+            width: auto;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+            box-shadow: 0 6px 20px rgba(102, 102, 102, 0.4);
+        }
+
         .result {
             display: none;
             text-align: center;
@@ -266,6 +280,7 @@
                 <div class="result-message">
                     日程調整をお待ちください！
                 </div>
+                <a href="admin.html" class="btn btn-secondary" style="margin-top: 20px; display: inline-block;">一覧を見る</a>
             </div>
 
         </div>
@@ -280,7 +295,9 @@
             '西川 慶一': 'img/1.png',
             '森本 風花': 'img/7.png',
             '安藤 凪': 'img/5.png',
-            '廣田 朱音': 'img/8.png'
+            '廣田 朱音': 'img/8.png',
+            '牟田 陸朗': 'img/9.png'
+            
         };
 
         function showError(message) {
@@ -301,6 +318,36 @@
 
             if (!name) {
                 showError('お名前を入力してください。');
+                return;
+            }
+
+            // リセットコマンドの処理
+            if (name.toLowerCase() === 'reset') {
+                if (!confirm('本当に全データをリセットしますか？\nこの操作は取り消せません。')) {
+                    return;
+                }
+                if (!confirm('最終確認: 全てのチーム振り分けデータが削除されます。よろしいですか？')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/reset', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('データをリセットしました。');
+                        nameInput.value = '';
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    showError('リセットに失敗しました: ' + error.message);
+                }
                 return;
             }
 
