@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
 // 幹部陣リスト
 const executives = [
@@ -13,32 +12,6 @@ const executives = [
     '廣田 朱音',
     '牟田 陸朗'
 ];
-
-// データファイルのパス
-const getDataPath = () => {
-    const dataDir = '/tmp/data';
-    const dataFile = path.join(dataDir, 'results.json');
-    return { dataDir, dataFile };
-};
-
-// データを保存する
-function saveData(teams) {
-    const { dataDir, dataFile } = getDataPath();
-    try {
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        fs.writeFileSync(
-            dataFile,
-            JSON.stringify(teams, null, 2),
-            'utf8'
-        );
-        return true;
-    } catch (error) {
-        console.error('Error saving data:', error);
-        return false;
-    }
-}
 
 export default async function handler(req, res) {
     // CORS設定
@@ -58,23 +31,25 @@ export default async function handler(req, res) {
         });
     }
 
-    // 空のデータで初期化
-    const teams = {};
-    executives.forEach(exec => {
-        teams[exec] = [];
-    });
+    try {
+        // 空のデータで初期化
+        const teams = {};
+        executives.forEach(exec => {
+            teams[exec] = [];
+        });
 
-    // データを保存
-    if (!saveData(teams)) {
+        // データを保存
+        await kv.set('lottery_teams', teams);
+
+        return res.status(200).json({
+            success: true,
+            message: 'データをリセットしました。'
+        });
+    } catch (error) {
+        console.error('Error:', error);
         return res.status(500).json({
             success: false,
-            message: 'データの保存に失敗しました。'
+            message: 'サーバーエラーが発生しました。'
         });
     }
-
-    return res.status(200).json({
-        success: true,
-        message: 'データをリセットしました。'
-    });
 }
-

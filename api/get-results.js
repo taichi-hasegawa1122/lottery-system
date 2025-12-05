@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
 // 幹部陣リスト
 const executives = [
@@ -14,26 +13,6 @@ const executives = [
     '牟田 陸朗'
 ];
 
-// データファイルのパス
-const getDataPath = () => {
-    const dataFile = '/tmp/data/results.json';
-    return dataFile;
-};
-
-// データを読み込む
-function loadData() {
-    const dataFile = getDataPath();
-    try {
-        if (fs.existsSync(dataFile)) {
-            const jsonData = fs.readFileSync(dataFile, 'utf8');
-            return JSON.parse(jsonData);
-        }
-    } catch (error) {
-        console.error('Error loading data:', error);
-    }
-    return {};
-}
-
 export default async function handler(req, res) {
     // CORS設定
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,18 +24,25 @@ export default async function handler(req, res) {
         return;
     }
 
-    let teams = loadData();
+    try {
+        let teams = await kv.get('lottery_teams') || {};
 
-    // 全幹部の配列を確保
-    executives.forEach(exec => {
-        if (!teams[exec]) {
-            teams[exec] = [];
-        }
-    });
+        // 全幹部の配列を確保
+        executives.forEach(exec => {
+            if (!teams[exec]) {
+                teams[exec] = [];
+            }
+        });
 
-    return res.status(200).json({
-        success: true,
-        teams: teams
-    });
+        return res.status(200).json({
+            success: true,
+            teams: teams
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'サーバーエラーが発生しました。'
+        });
+    }
 }
-
